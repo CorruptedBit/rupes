@@ -6,9 +6,8 @@ echo "::group::Executing install-kernel-akmods"
 trap 'echo "::endgroup::"' EXIT
 
 # Create shims to bypass kernel-install triggering dracut/rpm-ostree during
-# this layer -- bootc regenerates the initramfs from /usr/lib/modules at
-# deploy time, so there's no need to do it again here (same trick used by
-# ublue-os/bazzite's own kernel swap).
+# the package transaction (same trick used by ublue-os/bazzite's own kernel
+# swap). The initramfs is built explicitly at the end of this script instead.
 pushd /usr/lib/kernel/install.d
 mv 05-rpmostree.install 05-rpmostree.install.bak
 mv 50-dracut.install 50-dracut.install.bak
@@ -53,3 +52,13 @@ pushd /usr/lib/kernel/install.d
 mv -f 05-rpmostree.install.bak 05-rpmostree.install
 mv -f 50-dracut.install.bak 50-dracut.install
 popd
+
+# bootc does NOT generate the initramfs at deploy time: it boots the one shipped
+# in the image, so we must build it here (the dracut hook was shimmed above).
+# --no-hostonly so it works on any hardware/VM; the ostree module is required
+# to mount the deployment root.
+KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
+export DRACUT_NO_XATTR=1
+/usr/bin/dracut --no-hostonly --kver "${KERNEL_VERSION}" --reproducible -v --add ostree \
+    -f "/usr/lib/modules/${KERNEL_VERSION}/initramfs.img"
+chmod 0600 "/usr/lib/modules/${KERNEL_VERSION}/initramfs.img"
