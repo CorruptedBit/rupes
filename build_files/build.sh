@@ -28,9 +28,9 @@ dnf5 install -y gamemode mesa-vulkan-drivers
 ## ratbagd: system D-Bus daemon for configuring gaming mice (Piper etc.)
 dnf5 install -y libratbag-ratbagd
 
-## Terminal and launcher referenced by Fedora's default sway config
-## ($term = foot, $menu = rofi; rofi-wayland is now merged into plain rofi).
-dnf5 install -y foot rofi
+## Terminal ($term = foot in Fedora's default sway config) and our launcher
+## (fuzzel, bound on $mod+d in 30-keybindings.conf).
+dnf5 install -y foot fuzzel
 
 ## VsCode from Microsoft
 rpm --import https://packages.microsoft.com/keys/microsoft.asc

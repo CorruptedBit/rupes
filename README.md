@@ -161,3 +161,6 @@ via [fedora-dev-light](https://github.com/corruptedbit/fedora-dev-light). The ke
 original template README is kept at [`README-ublue.md`](./README-ublue.md) for reference on
 generic bootc-image-template usage (cosign setup, ArtifactHub indexing, full `Justfile` recipe
 reference, etc.).
+
+The Sway/Waybar/fuzzel theming took visual inspiration from
+[Coutons/sway-ricing](https://github.com/Coutons/sway-ricing); no files were copied from it.

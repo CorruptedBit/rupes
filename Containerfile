@@ -21,7 +21,7 @@ FROM ghcr.io/ublue-os/akmods:${KERNEL_TAG} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_TAG} AS akmods-extra
 
 # Base Image
-FROM quay.io/fedora-ostree-desktops/sway-atomic:44
+FROM quay.io/fedora-ostree-desktops/sway-atomic:${FEDORA_VERSION}
 ## Other possible base images include:
 # FROM quay.io/fedora-ostree-desktops/kinoite:44
 # FROM quay.io/fedora-ostree-desktops/silverblue:44

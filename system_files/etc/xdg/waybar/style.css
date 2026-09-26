@@ -1,0 +1,113 @@
+/* rupes Waybar style. Replaces the stock /etc/xdg/waybar/style.css;
+ * override per user by copying it to ~/.config/waybar/style.css.
+ * All colors live in the block below, so a palette change is a one-block edit. */
+@define-color bg      #1c1e26;
+@define-color surface #262a35;
+@define-color text    #d5d8e0;
+@define-color muted   #8a90a2;
+@define-color accent  #7aa2f7;
+@define-color warn    #e0af68;
+@define-color crit    #f7768e;
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "CaskaydiaCove Nerd Font", sans-serif;
+    font-size: 13px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: alpha(@bg, 0.92);
+    color: @text;
+}
+
+/* Every module on the right, plus the workspace strip and clock, is a pill. */
+#workspaces,
+#clock,
+#network,
+#disk,
+#cpu,
+#memory,
+#temperature,
+#pulseaudio,
+#backlight,
+#battery,
+#tray {
+    background: @surface;
+    border-radius: 8px;
+    margin: 4px 0;
+    padding: 0 10px;
+}
+
+#workspaces {
+    padding: 0 4px;
+}
+
+#workspaces button {
+    background: transparent;
+    color: @muted;
+    border-radius: 6px;
+    margin: 3px 1px;
+    padding: 0 8px;
+}
+
+#workspaces button:hover {
+    background: alpha(@text, 0.08);
+    color: @text;
+}
+
+#workspaces button.focused {
+    background: @accent;
+    color: @bg;
+}
+
+#workspaces button.urgent {
+    background: @crit;
+    color: @bg;
+}
+
+/* The window title sits directly on the bar, no pill. */
+#window {
+    color: @muted;
+    margin: 0 8px;
+}
+
+window#waybar.empty #window {
+    background: transparent;
+}
+
+#pulseaudio.muted,
+#network.disconnected {
+    color: @muted;
+}
+
+#battery.warning,
+#battery.critical,
+#temperature.critical {
+    color: @bg;
+}
+
+#battery.warning {
+    background: @warn;
+}
+
+#battery.critical,
+#temperature.critical {
+    background: @crit;
+}
+
+#battery.charging,
+#battery.plugged {
+    color: @accent;
+}
+
+tooltip {
+    background: @surface;
+    border: 1px solid @accent;
+    border-radius: 8px;
+}
+
+tooltip label {
+    color: @text;
+}

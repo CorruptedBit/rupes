@@ -1,0 +1,99 @@
+// rupes Waybar layout. Replaces the stock /etc/xdg/waybar/config.jsonc;
+// override per user by copying it to ~/.config/waybar/config.jsonc.
+// Icons are Nerd Font (Font Awesome range) codepoints, written as \u escapes.
+{
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "spacing": 6,
+
+    "modules-left": ["sway/workspaces", "sway/window"],
+    "modules-center": ["clock"],
+    "modules-right": [
+        "network",
+        "disk",
+        "cpu",
+        "memory",
+        "temperature",
+        "pulseaudio",
+        "backlight",
+        "battery",
+        "tray"
+    ],
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "format": "{name}"
+    },
+
+    "sway/window": {
+        "format": "{title}",
+        "max-length": 60
+    },
+
+    "clock": {
+        "format": "{:%a %d %b  %H:%M}",
+        "tooltip-format": "<tt>{calendar}</tt>"
+    },
+
+    "network": {
+        "format-wifi": "  {essid}",
+        "format-ethernet": "  {ifname}",
+        "format-disconnected": "  offline",
+        "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}/{cidr}"
+    },
+
+    // /var is the writable partition on an ostree system; "/" would report the
+    // read-only image instead of the real disk usage.
+    "disk": {
+        "interval": 30,
+        "path": "/var",
+        "format": "  {percentage_used}%"
+    },
+
+    "cpu": {
+        "interval": 3,
+        "format": "  {usage}%"
+    },
+
+    "memory": {
+        "interval": 5,
+        "format": "  {percentage}%"
+    },
+
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "  {temperatureC}°C"
+    },
+
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "  muted",
+        "format-icons": {
+            "default": ["", ""]
+        },
+        "on-click": "pavucontrol"
+    },
+
+    "backlight": {
+        "format": "  {percent}%",
+        "on-scroll-up": "brightnessctl set 5%+",
+        "on-scroll-down": "brightnessctl set 5%-"
+    },
+
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{icon}  {capacity}%",
+        "format-charging": "  {capacity}%",
+        "format-plugged": "  {capacity}%",
+        "format-icons": ["", "", "", "", ""]
+    },
+
+    "tray": {
+        "spacing": 8
+    }
+}
