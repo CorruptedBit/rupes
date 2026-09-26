@@ -1,11 +1,5 @@
-# Allow build scripts to be referenced without being copied into the final image
-FROM scratch AS ctx
-COPY build_files /
-COPY system_files /system_files
-
-# Prebuilt OGC (Open Gaming Collective) kernel + kernel modules, same akmods
-# images ublue-os/bazzite builds its own kernel swap from:
-# https://github.com/ublue-os/kernel-cache
+# Build args used in FROM lines must be declared before the first FROM to be
+# visible to it (ARGs after a FROM are scoped to that stage only).
 #
 # "ogc-44" is a floating tag (always the latest OGC build for Fedora 44).
 # For a fully reproducible/pinned build, replace it with an exact tag like
@@ -15,6 +9,14 @@ ARG FEDORA_VERSION="44"
 ARG KERNEL_FLAVOR="ogc"
 ARG KERNEL_TAG="${KERNEL_FLAVOR}-${FEDORA_VERSION}"
 
+# Allow build scripts to be referenced without being copied into the final image
+FROM scratch AS ctx
+COPY build_files /
+COPY system_files /system_files
+
+# Prebuilt OGC (Open Gaming Collective) kernel + kernel modules, same akmods
+# images ublue-os/bazzite builds its own kernel swap from:
+# https://github.com/ublue-os/kernel-cache
 FROM ghcr.io/ublue-os/akmods:${KERNEL_TAG} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_TAG} AS akmods-extra
 
