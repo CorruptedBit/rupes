@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$EUID" -eq 0 ]; then
+    echo "hjust: refusing to run as root" >&2
+    exit 1
+fi
+exec just --justfile /usr/share/just/Justfile "$@"
