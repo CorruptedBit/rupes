@@ -4,4 +4,16 @@ if [ "$EUID" -eq 0 ]; then
     echo "hjust: refusing to run as root" >&2
     exit 1
 fi
-exec just --justfile /usr/share/just/Justfile "$@"
+
+JUSTFILE=/usr/share/just/Justfile
+
+# With no arguments, or -h/--help, show our own recipes instead of just(1)'s
+# generic --help (which knows nothing about rupes' recipes).
+if [ "$#" -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    printf 'hjust: rupes recipes, via %s\n' "$(just --version)"
+    echo "For just's own command-line options, run: just --help"
+    echo
+    exec just --justfile "$JUSTFILE" --list
+fi
+
+exec just --justfile "$JUSTFILE" "$@"
