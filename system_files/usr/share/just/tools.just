@@ -4,6 +4,7 @@
 #
 # Every enable/disable recipe is idempotent.
 
+# Install Claude Code [brew cask]
 [group('Tools')]
 enable-claude-code:
     #!/usr/bin/bash
@@ -14,6 +15,7 @@ enable-claude-code:
         brew install --cask claude-code
     fi
 
+# Uninstall Claude Code [brew cask]
 [group('Tools')]
 disable-claude-code:
     #!/usr/bin/bash
@@ -24,6 +26,7 @@ disable-claude-code:
         echo "claude-code is not installed."
     fi
 
+# Install git-graph [brew]
 [group('Tools')]
 enable-git-graph:
     #!/usr/bin/bash
@@ -34,6 +37,7 @@ enable-git-graph:
         brew install git-graph
     fi
 
+# Uninstall git-graph [brew]
 [group('Tools')]
 disable-git-graph:
     #!/usr/bin/bash
@@ -44,6 +48,7 @@ disable-git-graph:
         echo "git-graph is not installed."
     fi
 
+# Install zellij [brew]
 [group('Tools')]
 enable-zellij:
     #!/usr/bin/bash
@@ -54,6 +59,7 @@ enable-zellij:
         brew install zellij
     fi
 
+# Uninstall zellij [brew]
 [group('Tools')]
 disable-zellij:
     #!/usr/bin/bash
@@ -64,6 +70,7 @@ disable-zellij:
         echo "zellij is not installed."
     fi
 
+# Install chezmoi [brew]
 [group('Tools')]
 enable-chezmoi:
     #!/usr/bin/bash
@@ -74,6 +81,7 @@ enable-chezmoi:
         brew install chezmoi
     fi
 
+# Uninstall chezmoi [brew]
 [group('Tools')]
 disable-chezmoi:
     #!/usr/bin/bash
@@ -84,8 +92,7 @@ disable-chezmoi:
         echo "chezmoi is not installed."
     fi
 
-# Install starship and wire it into ~/.bashrc. The prompt theme itself is a
-# dotfile (~/.config/starship.toml) and belongs to your chezmoi setup, not here.
+# Install starship and wire it into ~/.bashrc. [brew]
 [group('Tools')]
 enable-starship:
     #!/usr/bin/bash
@@ -102,6 +109,7 @@ enable-starship:
         echo "starship enabled. Run 'source ~/.bashrc' or restart your shell to apply."
     fi
 
+# Uninstall starship and remove it from ~/.bashrc. [brew]
 [group('Tools')]
 disable-starship:
     #!/usr/bin/bash
