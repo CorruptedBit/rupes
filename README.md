@@ -1,17 +1,9 @@
 # rupes
 
 A personal [bootc](https://github.com/bootc-dev/bootc) image: Fedora Atomic with the **OGC gaming
-kernel swapped in**, plus opinionated dev tooling. Built from scratch rather than by extending
-[Bazzite](https://github.com/ublue-os/bazzite) directly — same kernel/gaming-driver source (the
-`ublue-os/akmods` images), none of Bazzite's Android/Waydroid or container-GUI-management bloat.
+kernel swapped in**, plus opinionated dev tooling.
 
 Published at: `ghcr.io/corruptedbit/rupes`
-
-## Philosophy
-
-This is the gaming-capable sibling of [fedora-dev-light](https://github.com/corruptedbit/fedora-dev-light):
-same base image, same `hjust`-based automation, same dev tooling — plus a kernel swap and a
-minimal, on-demand gaming stack. Nothing here is Bazzite-specific or `ujust`-based.
 
 ## What's in the image
 
@@ -19,10 +11,10 @@ minimal, on-demand gaming stack. Nothing here is Bazzite-specific or `ujust`-bas
   a complete, minimal Wayland setup (Sway compositor, waybar, launcher, terminal, ...)
 - **OGC kernel swap**: Fedora's stock kernel is removed and replaced with the
   [OGC kernel](https://github.com/OpenGamingCollective/linux) (BORE/LAVD schedulers,
-  SteamOS-derived tuning), pulled prebuilt from the same `ghcr.io/ublue-os/akmods` images
-  Bazzite itself builds from — see [`build_files/install-kernel-akmods`](./build_files/install-kernel-akmods).
-  Also includes the `xone` kmod (Xbox controller driver); more prebuilt kmods can be
-  uncommented there (OpenRazer, v4l2loopback, EVDI, ...).
+  SteamOS-derived tuning), pulled prebuilt from the `ghcr.io/ublue-os/akmods` images — see
+  [`build_files/install-kernel-akmods`](./build_files/install-kernel-akmods). Also includes the
+  `xone` kmod (Xbox controller driver); more prebuilt kmods can be uncommented there (OpenRazer,
+  v4l2loopback, EVDI, ...).
 - **Gaming basics baked into the image**: `gamemode`, `mesa-vulkan-drivers` — plain Fedora
   packages, no COPR/RPM Fusion required. `gamescope`/`mangohud` are intentionally left out
   (Steam runs as a Flatpak, which uses its own sandbox extensions for them).
@@ -39,17 +31,18 @@ minimal, on-demand gaming stack. Nothing here is Bazzite-specific or `ujust`-bas
   with automatic daily update/upgrade timers
 - **`just`** (plain, from Fedora's repos — no `ujust`), reachable from any shell via the
   `hjust` alias:
-  - `hjust install-dev-tools` — Claude Code, starship, git-graph, zellij (via Homebrew)
-  - `hjust enable-starship` — wires up starship in `~/.bashrc`
+  - `hjust enable-<tool>` / `disable-<tool>` — idempotent install/uninstall via Homebrew, one
+    pair per tool: `claude-code`, `git-graph`, `zellij`, `chezmoi`, `starship` (also wires/unwires
+    the `eval "$(starship init bash)"` line in `~/.bashrc`). Actual dotfiles (e.g.
+    `~/.config/starship.toml`) are out of scope here — manage them with `chezmoi`.
   - `hjust install-steam` — installs Steam via Flatpak/Flathub
   - `hjust kernel-info` — prints `uname -r` to confirm the OGC kernel swap took
   - `hjust update` — `sudo bootc upgrade`
   - `hjust clean` — prunes dangling/unused Podman images
 - **Custom wallpaper** ("Rancho") under `/usr/share/wallpapers`
 
-**Deliberately not included** (unlike Bazzite): Waydroid/Android support, Input Remapper,
-container/pod GUI management tools, vkBasalt, OBS VkCapture. Add them yourself in
-`build_files/build.sh` if you end up wanting them.
+**Not included**: Waydroid/Android support, Input Remapper, container/pod GUI management tools,
+vkBasalt, OBS VkCapture. Add them yourself in `build_files/build.sh` if you end up wanting them.
 
 All package installation logic lives in [`build_files/build.sh`](./build_files/build.sh), invoked
 from the [`Containerfile`](./Containerfile) during the image build. The kernel swap is a separate
@@ -154,13 +147,16 @@ pulled images can be verified.
 
 ## Credit
 
-This repository started from [ublue-os/image-template](https://github.com/ublue-os/image-template),
-via [fedora-dev-light](https://github.com/corruptedbit/fedora-dev-light). The kernel-swap approach
-(`build_files/install-kernel-akmods`, `install-kmods`, `cleanup`) is adapted directly from
-[ublue-os/bazzite](https://github.com/ublue-os/bazzite)'s own `Containerfile`. A copy of the
-original template README is kept at [`README-ublue.md`](./README-ublue.md) for reference on
-generic bootc-image-template usage (cosign setup, ArtifactHub indexing, full `Justfile` recipe
-reference, etc.).
+This repository started from [ublue-os/image-template](https://github.com/ublue-os/image-template).
+A copy of the original template README is kept at [`README-ublue.md`](./README-ublue.md) for
+reference on generic bootc-image-template usage (cosign setup, ArtifactHub indexing, full
+`Justfile` recipe reference, etc.).
+
+A few ideas were borrowed from [ublue-os/bazzite](https://github.com/ublue-os/bazzite): the
+kernel-swap approach (`build_files/install-kernel-akmods`, `install-kmods`, `cleanup`) is adapted
+directly from its `Containerfile`, and `hjust` (a plain `just` alias, see
+[`system_files/usr/bin/hjust`](./system_files/usr/bin/hjust)) takes its shape from Bazzite's own
+`ujust` wrapper.
 
 The Sway/Waybar/fuzzel theming took visual inspiration from
 [Coutons/sway-ricing](https://github.com/Coutons/sway-ricing); no files were copied from it.
