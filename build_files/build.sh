@@ -2,9 +2,6 @@
 
 set -ouex pipefail
 
-# Copy the contents of system_files/ of the git repo to /
-cp -avf "/ctx/system_files"/. /
-
 # Install packages
 
 ## dnf5's config-manager/copr plugins aren't necessarily installed by default.
@@ -55,6 +52,11 @@ dnf5 install -y --nogpgcheck --repofrompath "terra,https://repos.fyralabs.com/te
 dnf5 install -y zed
 dnf5 config-manager setopt terra.enabled=0
 rm -f /etc/yum.repos.d/terra*.repo
+
+## Copy the contents of system_files/ of the git repo to / -- done after all
+## package installs so Rupes own configs always win over a
+## package's own default config.
+cp -avf "/ctx/system_files"/. /
 
 #### Example for enabling a System Unit File
 systemctl enable podman.socket
