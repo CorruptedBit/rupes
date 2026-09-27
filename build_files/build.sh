@@ -25,6 +25,10 @@ dnf5 install -y gamemode mesa-vulkan-drivers
 ## ratbagd: system D-Bus daemon for configuring gaming mice (Piper etc.)
 dnf5 install -y libratbag-ratbagd
 
+## steam-devices: udev rules for gaming devices (controllers, VR headsets, ...).
+## Requires the Steam flatpak to have /run/udev mounted read-only to see them.
+dnf5 install -y steam-devices
+
 ## Terminal ($term = foot in Fedora's default sway config) and our launcher
 ## (fuzzel, bound on $mod+d in 30-keybindings.conf).
 dnf5 install -y foot fuzzel
