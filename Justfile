@@ -468,24 +468,25 @@ sign $target_image=image_name $tag=default_tag:
     read -sp 'GHCR password/token: ' password
     echo
 
-    # Login
-    echo "$password" | sudo podman login ghcr.io -u {{ repo_organization }} --password-stdin
+    # Login -- write to ~/.docker/config.json, not podman's own auth.json,
+    # so cosign's go-containerregistry keychain (which only reads
+    # $DOCKER_CONFIG/config.json) can find the credentials too.
+    mkdir -p ~/.docker
+    echo "$password" | podman login ghcr.io -u {{ repo_organization }} \
+      --authfile ~/.docker/config.json --password-stdin
 
     # Sign with same credentials
-    export COSIGN_REGISTRY_USERNAME={{ repo_organization }}
-    export COSIGN_REGISTRY_PASSWORD="$password"
     cosign sign -y --key cosign.key \
       ghcr.io/{{ repo_organization }}/{{ target_image }}:{{ tag }}
 
     # Cleanup
-    unset COSIGN_REGISTRY_USERNAME COSIGN_REGISTRY_PASSWORD
     password=""
 
 # Build, push, and sign image (full release workflow)
 release $target_image=image_name $tag=default_tag:
     #!/usr/bin/env bash
     set -euo pipefail
-    just build {{ target_image }} {{ tag }}
+    sudo just build {{ target_image }} {{ tag }}
     # Rechunking disabled to save building time.
     # sudo -E just ostree-rechunk {{ target_image }} {{ tag }}
     just push {{ target_image }} {{ tag }}
