@@ -39,6 +39,11 @@ dnf5 install -y foot fuzzel
 ## `exec autotiling` that starts it.
 dnf5 install -y python3-i3ipc
 
+## adw-gtk3-theme: plain GTK3 apps (Thunar, Blueman, ...) don't follow
+## org.gnome.desktop.interface color-scheme -- that's only wired up for
+## GTK4/libadwaita apps and the portal (Flatpak).
+dnf5 install -y adw-gtk3-theme
+
 ## VsCode from Microsoft
 rpm --import https://packages.microsoft.com/keys/microsoft.asc
 
