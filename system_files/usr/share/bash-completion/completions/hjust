@@ -1,0 +1,21 @@
+# Completion for hjust: reuse just's completer, injecting --justfile so it
+# sees rupes' recipes instead of looking for a Justfile in the cwd.
+
+_hjust_complete() {
+    local -a prefix=(just --justfile /usr/share/just/Justfile)
+    local -a orig=("${COMP_WORDS[@]}")
+    local orig_cword=$COMP_CWORD
+
+    # bash-completion loads completers lazily: make sure just's is defined
+    declare -F _clap_complete_just >/dev/null || source /usr/share/bash-completion/completions/just
+
+    COMP_WORDS=("${prefix[@]}" "${orig[@]:1}")
+    COMP_CWORD=$((orig_cword + ${#prefix[@]} - 1)) # number of words in prefix minus "just" (so - 1)
+    COMP_LINE="${prefix[*]} ${COMP_LINE#* }"
+    _clap_complete_just
+
+    # reset variable to original values
+    COMP_WORDS=("${orig[@]}")
+    COMP_CWORD=$orig_cword
+}
+complete -o nospace -o bashdefault -o nosort -F _hjust_complete hjust

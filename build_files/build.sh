@@ -73,6 +73,11 @@ rm -f /etc/yum.repos.d/terra*.repo
 ## package's own default config.
 cp -avf "/ctx/system_files"/. /
 
+## Bash completion for just (just >= 1.50 generates it dynamically); hjust's
+## completion wrapper lives in system_files/usr/share/bash-completion/.
+mkdir -p /usr/share/bash-completion/completions
+JUST_COMPLETE=bash just >/usr/share/bash-completion/completions/just
+
 #### Example for enabling a System Unit File
 systemctl enable podman.socket
 
