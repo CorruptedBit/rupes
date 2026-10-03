@@ -39,7 +39,6 @@ Published at: `ghcr.io/corruptedbit/rupes`
   - `hjust kernel-info` — prints `uname -r` to confirm the OGC kernel swap took
   - `hjust update` — `sudo bootc upgrade`
   - `hjust clean` — prunes dangling/unused Podman images
-- **Custom wallpaper** ("Rancho") under `/usr/share/wallpapers`
 
 **Not included**: Waydroid/Android support, Input Remapper, container/pod GUI management tools,
 vkBasalt, OBS VkCapture. Add them yourself in `build_files/build.sh` if you end up wanting them.
@@ -75,7 +74,7 @@ Reboot to apply.
   `just`), copies `system_files/` into the image root, enables `podman.socket` +
   `flathub-setup.service`.
 - **`system_files/`** — mirrors the final image's root filesystem: Flathub remote definition,
-  fonts, wallpaper, custom `just` recipes (including `gaming.just`), `hjust` binary. Merged into
+  fonts, custom `just` recipes (including `gaming.just`), `hjust` binary. Merged into
   `/` by `build.sh`, not by a separate `COPY` in the `Containerfile`.
 - **`image-template.env`** — build metadata, loaded by the `Justfile` via `set dotenv-filename`.
 - **`Justfile`** — local build/test commands (see below).
