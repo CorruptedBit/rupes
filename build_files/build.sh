@@ -63,8 +63,11 @@ dnf5 install -y code
 ## Terra Software (Zed editor)
 ## Plain fedora-bootc doesn't ship the Terra repo files like ublue-os images
 ## do, so bootstrap it ourselves (see https://docs.terrapkg.com/usage/installing/).
-dnf5 install -y --nogpgcheck --repofrompath "terra,https://repos.fyralabs.com/terra\$releasever" terra-release terra-gpg-keys
-dnf5 install -y zed
+## --refresh: /var/cache is a persistent build cache mount, so stale Terra
+## metadata (pointing at a release RPM Terra has since replaced -> 404) would
+## otherwise survive between builds.
+dnf5 install -y --refresh --nogpgcheck --repofrompath "terra,https://repos.fyralabs.com/terra\$releasever" terra-release terra-gpg-keys
+dnf5 install -y --refresh zed
 dnf5 config-manager setopt terra.enabled=0
 rm -f /etc/yum.repos.d/terra*.repo
 
