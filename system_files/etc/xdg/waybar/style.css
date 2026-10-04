@@ -33,6 +33,7 @@ window#waybar {
 #pulseaudio,
 #backlight,
 #battery,
+#idle_inhibitor,
 #tray {
     background: @surface;
     border-radius: 8px;
@@ -100,6 +101,11 @@ window#waybar.empty #window {
 #battery.charging,
 #battery.plugged {
     color: @accent;
+}
+
+#idle_inhibitor.activated {
+    background: @accent;
+    color: @bg;
 }
 
 tooltip {

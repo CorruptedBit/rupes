@@ -18,6 +18,7 @@
         "pulseaudio",
         "backlight",
         "battery",
+        "idle_inhibitor",
         "tray"
     ],
 
@@ -93,6 +94,16 @@
         "format-icons": ["", "", "", "", ""]
     },
 
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "",
+            "deactivated": ""
+        },
+        "tooltip-format-activated": "Idle inhibitor: ON",
+        "tooltip-format-deactivated": "Idle inhibitor: OFF"
+    },
+    
     "tray": {
         "spacing": 8
     }

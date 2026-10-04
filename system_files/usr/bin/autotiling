@@ -5,7 +5,7 @@
 # for Fedora, so rupes ships the upstream script directly; its only runtime
 # dependency (i3ipc-python) is installed via the python3-i3ipc RPM in
 # build_files/build.sh. Started via `exec autotiling` in
-# system_files/etc/sway/config.d/10-rupes.conf.
+# system_files/usr/share/sway/config.d/97-rupes.conf.
 
 """
 This script uses the i3ipc python module to switch the layout splith / splitv
