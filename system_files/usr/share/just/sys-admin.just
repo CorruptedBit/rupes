@@ -26,3 +26,9 @@ switch-to-dark-mode:
 switch-to-light-mode:
     gsettings set org.gnome.desktop.interface color-scheme 'default'
     gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3'
+
+# Wrapper for localectl, e.g. set-x11-keymap it pc105 "" (use --help)
+[group('System')]
+[positional-arguments]
+keyboard-language *args:
+    sudo localectl  "$@"
