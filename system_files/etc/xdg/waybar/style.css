@@ -24,6 +24,7 @@ window#waybar {
 
 /* Every module on the right, plus the workspace strip and clock, is a pill. */
 #workspaces,
+#taskbar,
 #clock,
 #network,
 #disk,
@@ -41,7 +42,8 @@ window#waybar {
     padding: 0 10px;
 }
 
-#workspaces {
+#workspaces,
+#taskbar {
     padding: 0 4px;
 }
 
@@ -68,7 +70,8 @@ window#waybar {
     color: @bg;
 }
 
-/* The window title sits directly on the bar, no pill. */
+/* sway/window is disabled in the config (replaced by wlr/taskbar).
+ * The window title sits directly on the bar, no pill.
 #window {
     color: @muted;
     margin: 0 8px;
@@ -76,6 +79,30 @@ window#waybar {
 
 window#waybar.empty #window {
     background: transparent;
+}
+*/
+
+/* Same pill-with-buttons look as the workspace strip. */
+#taskbar button {
+    background: transparent;
+    color: @muted;
+    border-radius: 6px;
+    margin: 3px 1px;
+    padding: 0 6px;
+}
+
+#taskbar button:hover {
+    background: alpha(@text, 0.08);
+    color: @text;
+}
+
+#taskbar button.active {
+    background: @accent;
+    color: @bg;
+}
+
+#taskbar button.minimized {
+    opacity: 0.5;
 }
 
 #pulseaudio.muted,

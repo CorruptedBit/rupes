@@ -7,7 +7,7 @@
     "height": 30,
     "spacing": 6,
 
-    "modules-left": ["sway/workspaces", "sway/window"],
+    "modules-left": ["sway/workspaces", "wlr/taskbar"],
     "modules-center": ["clock"],
     "modules-right": [
         "network",
@@ -27,9 +27,17 @@
         "format": "{name}"
     },
 
-    "sway/window": {
-        "format": "{title}",
-        "max-length": 60
+    // "sway/window": {
+    //     "format": "{title}",
+    //     "max-length": 60
+    // },
+
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 14,
+        "tooltip-format": "{title}",
+        "on-click": "activate",
+        "on-click-right": "close"
     },
 
     "clock": {
