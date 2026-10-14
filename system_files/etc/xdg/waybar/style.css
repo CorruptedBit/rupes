@@ -24,7 +24,6 @@ window#waybar {
 
 /* Every module on the right, plus the workspace strip and clock, is a pill. */
 #workspaces,
-#taskbar,
 #clock,
 #network,
 #disk,
@@ -42,8 +41,7 @@ window#waybar {
     padding: 0 10px;
 }
 
-#workspaces,
-#taskbar {
+#workspaces {
     padding: 0 4px;
 }
 
@@ -82,23 +80,24 @@ window#waybar.empty #window {
 }
 */
 
-/* Same pill-with-buttons look as the workspace strip. */
+/* No container pill: each window is its own pill, so nothing is drawn when
+ * no window is open. */
 #taskbar button {
-    background: transparent;
+    background: @surface;
     color: @muted;
-    border-radius: 6px;
-    margin: 3px 1px;
-    padding: 0 6px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    margin: 4px 2px;
+    padding: 0 8px;
 }
 
 #taskbar button:hover {
-    background: alpha(@text, 0.08);
+    background: alpha(@text, 0.16);
     color: @text;
 }
 
 #taskbar button.active {
-    background: @accent;
-    color: @bg;
+    border-color: @accent;
 }
 
 #taskbar button.minimized {
