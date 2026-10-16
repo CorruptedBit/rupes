@@ -44,6 +44,10 @@ dnf5 install -y python3-i3ipc
 ## GTK4/libadwaita apps and the portal (Flatpak).
 dnf5 install -y adw-gtk3-theme
 
+## fuse-sshfs: mount remote dirs over SSH. Baked in (not Homebrew) so it's on
+## the default PATH and the setuid fusermount3 helper works for normal users.
+dnf5 install -y fuse-sshfs
+
 ## VsCode from Microsoft
 rpm --import https://packages.microsoft.com/keys/microsoft.asc
 
