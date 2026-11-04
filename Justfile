@@ -8,6 +8,7 @@ export image_keywords := env("IMAGE_KEYWORDS")
 export image_logo_url := env("IMAGE_LOGO_URL")
 export default_tag := env("DEFAULT_TAG")
 export bib_image := env("BIB_IMAGE")
+export version_minor := env("VERSION_MINOR")
 
 alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
@@ -482,13 +483,32 @@ sign $target_image=image_name $tag=default_tag:
     # Cleanup
     password=""
 
-# Build, push, and sign image (full release workflow)
-release $target_image=image_name $tag=default_tag:
+# Build, rechunk, push, and sign image under the rupes:<fedora-major>.x.y
+# tagging scheme (full release workflow). Rechunking re-derives the OCI
+# layers from the final ostree-committed filesystem, dropping dead weight
+# left behind by in-image deletions (e.g. the stock kernel removed during
+# the OGC kernel swap) that plain `podman build` layers would otherwise
+# still ship. Tags pushed:
+#   <fedora-major>.<version_minor>.<date>  -- exact, immutable build
+#   <fedora-major>-latest                  -- floating, tracks this major only
+#   latest                                 -- floating, newest build overall
+# All three point at the same digest, so cosign only needs to sign one of them.
+release $target_image=image_name:
     #!/usr/bin/env bash
     set -euo pipefail
-    sudo just build {{ target_image }} {{ tag }}
-    # Rechunking disabled to save building time.
-    # sudo -E just ostree-rechunk {{ target_image }} {{ tag }}
-    just push {{ target_image }} {{ tag }}
-    just sign {{ target_image }} {{ tag }}
-    echo "✓ Image {{ target_image }}:{{ tag }} built, pushed, and signed"
+    fedora_version=$(grep -oP '(?<=ARG FEDORA_VERSION=")[^"]+' Containerfile)
+    version_tag="${fedora_version}.${version_minor}.$(date +%Y%m%d)"
+    major_tag="${fedora_version}-latest"
+
+    sudo just build {{ target_image }} latest
+    sudo -E just ostree-rechunk {{ target_image }} latest
+
+    sudo podman tag "localhost/{{ target_image }}:latest" "localhost/{{ target_image }}:${version_tag}"
+    sudo podman tag "localhost/{{ target_image }}:latest" "localhost/{{ target_image }}:${major_tag}"
+
+    just push {{ target_image }} "${version_tag}"
+    just push {{ target_image }} "${major_tag}"
+    just push {{ target_image }} latest
+
+    just sign {{ target_image }} "${version_tag}"
+    echo "✓ Image {{ target_image }} built, pushed as ${version_tag}, ${major_tag}, latest, and signed"

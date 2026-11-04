@@ -61,8 +61,8 @@ Reboot to apply.
 
 - **`Containerfile`** — entrypoint for the image build. Pulls in `build_files/` and
   `system_files/` via a `FROM scratch` context stage (`ctx`), swaps in the OGC kernel from the
-  `ghcr.io/ublue-os/akmods{,-extra}:ogc-44` images, then runs `build.sh` against the
-  `quay.io/fedora-ostree-desktops/sway-atomic:44` base image.
+  `ghcr.io/ublue-os/akmods{,-extra}:ogc-45` images, then runs `build.sh` against the
+  `quay.io/fedora-ostree-desktops/sway-atomic:45` base image.
 - **`build_files/install-kernel-akmods`** — removes Fedora's stock kernel, installs the prebuilt
   OGC kernel RPMs, versionlocks them so `dnf` never reinstalls the stock kernel, and installs a
   small set of prebuilt kmods (only `xone` by default).
@@ -87,13 +87,13 @@ Reboot to apply.
 
 ## Pinning the kernel version
 
-The `Containerfile` uses the floating `ogc-44` tag from `ghcr.io/ublue-os/akmods`, so every
-rebuild picks up whatever OGC kernel build is currently published for Fedora 44. For a fully
+The `Containerfile` uses the floating `ogc-45` tag from `ghcr.io/ublue-os/akmods`, so every
+rebuild picks up whatever OGC kernel build is currently published for Fedora 45. For a fully
 reproducible/pinned build, list available tags and set `KERNEL_TAG` explicitly:
 
 ```bash
-skopeo list-tags docker://ghcr.io/ublue-os/akmods | grep ogc-44
-podman build --build-arg KERNEL_TAG=ogc-44-7.0.9-ogc3.2.fc44.x86_64 ...
+skopeo list-tags docker://ghcr.io/ublue-os/akmods | grep ogc-45
+podman build --build-arg KERNEL_TAG=ogc-45-7.0.9-ogc3.2.fc45.x86_64 ...
 ```
 
 ## Building and pushing locally
@@ -107,7 +107,8 @@ Requires [`just`](https://just.systems/) and `podman`.
 # Build the image
 just build rupes latest
 
-# Optional: rechunk for smaller incremental updates
+# Rechunk for smaller incremental updates (drops dead weight left behind
+# by in-image deletions, e.g. the stock kernel removed during the OGC swap)
 sudo just ostree-rechunk rupes latest
 
 # Push to GHCR
@@ -116,9 +117,27 @@ just push rupes latest
 # Sign the image (requires cosign.key locally)
 sudo just sign rupes latest
 
-# Or do all of the above in one go
-just release rupes latest
+# Or do all of the above in one go -- builds "latest", rechunks it, and
+# pushes/signs it under the full rupes:<fedora-major>.x.y tagging scheme
+# (see below)
+just release rupes
 ```
+
+### Image tagging scheme
+
+Each `just release` pushes the same build under three tags:
+
+- `rupes:<fedora-major>.<minor>.<date>` — exact, immutable build (e.g. `45.0.20261104`).
+  `<minor>` comes from `VERSION_MINOR` in `image-template.env`; bump it by hand for a
+  substantial change, reset it to `0` on a Fedora major bump. `<date>` is just the build date,
+  so it never needs tracking.
+- `rupes:<fedora-major>-latest` — floating; always the newest build for that Fedora major.
+  Use this to track updates without ever crossing a major Fedora version
+  (`bootc switch ghcr.io/corruptedbit/rupes:45-latest`).
+- `rupes:latest` — floating; always the newest build overall, including major bumps.
+
+All three point at the same image digest, so only one needs to be cosign-signed; verification
+against any of the three tags works.
 
 ### Building a VM image or ISO
 

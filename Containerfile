@@ -1,11 +1,11 @@
 # Build args used in FROM lines must be declared before the first FROM to be
 # visible to it (ARGs after a FROM are scoped to that stage only).
 #
-# "ogc-44" is a floating tag (always the latest OGC build for Fedora 44).
+# "ogc-45" is a floating tag (always the latest OGC build for Fedora 45).
 # For a fully reproducible/pinned build, replace it with an exact tag like
-# "ogc-44-7.0.9-ogc3.2.fc44.x86_64" -- list available tags with:
-#   skopeo list-tags docker://ghcr.io/ublue-os/akmods | grep ogc-44
-ARG FEDORA_VERSION="44"
+# "ogc-45-7.0.9-ogc3.2.fc45.x86_64" -- list available tags with:
+#   skopeo list-tags docker://ghcr.io/ublue-os/akmods | grep ogc-45
+ARG FEDORA_VERSION="45"
 ARG KERNEL_FLAVOR="ogc"
 ARG KERNEL_TAG="${KERNEL_FLAVOR}-${FEDORA_VERSION}"
 
@@ -23,9 +23,9 @@ FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_TAG} AS akmods-extra
 # Base Image
 FROM quay.io/fedora-ostree-desktops/sway-atomic:${FEDORA_VERSION}
 ## Other possible base images include:
-# FROM quay.io/fedora-ostree-desktops/kinoite:44
-# FROM quay.io/fedora-ostree-desktops/silverblue:44
-# FROM quay.io/fedora/fedora-bootc:44
+# FROM quay.io/fedora-ostree-desktops/kinoite:45
+# FROM quay.io/fedora-ostree-desktops/silverblue:45
+# FROM quay.io/fedora/fedora-bootc:45
 #
 # Fedora Atomic Desktops: quay.io/fedora-ostree-desktops/<variant>-atomic
 
