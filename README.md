@@ -23,7 +23,6 @@ Published at: `ghcr.io/corruptedbit/rupes`
   (Flatpak/Flathub), the well-supported path for Steam on an immutable/ostree base.
 - Similar to [uCore](https://github.com/ublue-os/ucore): `podman-compose`, `firewalld`,
   `tailscale`, `distrobox`
-- **Visual Studio Code** (from Microsoft's official repo)
 - **Zed** editor (via the [Terra](https://terra.fyi/) repo, enabled only during the build)
 - **Custom Nerd Fonts**: CascadiaCode, FantasqueSansMono, Mononoki
 - **Flatpak**, with Flathub pre-configured as a system remote on first boot

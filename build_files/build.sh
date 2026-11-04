@@ -48,22 +48,6 @@ dnf5 install -y adw-gtk3-theme
 ## the default PATH and the setuid fusermount3 helper works for normal users.
 dnf5 install -y fuse-sshfs
 
-## VsCode from Microsoft
-rpm --import https://packages.microsoft.com/keys/microsoft.asc
-
-cat << 'EOF' > /etc/yum.repos.d/vscode.repo
-[code]
-name=Visual Studio Code
-baseurl=https://packages.microsoft.com/yumrepos/vscode
-enabled=1
-autorefresh=1
-type=rpm-md
-gpgcheck=1
-gpgkey=https://packages.microsoft.com/keys/microsoft.asc
-EOF
-
-dnf5 install -y code
-
 ## Terra Software (Zed editor)
 ## Plain fedora-bootc doesn't ship the Terra repo files like ublue-os images
 ## do, so bootstrap it ourselves (see https://docs.terrapkg.com/usage/installing/).
