@@ -77,7 +77,11 @@ Reboot to apply.
 - **`system_files/`** — mirrors the final image's root filesystem: Flathub remote definition,
   fonts, custom `just` recipes (including `gaming.just`), `hjust` binary. Merged into
   `/` by `build.sh`, not by a separate `COPY` in the `Containerfile`.
-- **`image-template.env`** — build metadata, loaded by the `Justfile` via `set dotenv-filename`.
+- **`env/core-image-template.env`** / **`env/branch-image-template.env`** — build metadata, loaded
+  together by the `Justfile` via `set dotenv-command` (`cat` of both files). `core-image-template.env`
+  holds values shared by every flavor (`REPO_ORGANIZATION`, `CORE_VERSION`, ...);
+  `branch-image-template.env` holds DE-specific ones (`IMAGE_NAME`, `BRANCH_VERSION`, ...) — see
+  "Image tagging scheme" below.
 - **`Justfile`** — local build/test commands (see below).
 - **`disk_config/`** — `bootc-image-builder` configs:
   - `disk.toml` — for `qcow2`/`raw` VM images (20 GiB filesystem minimum).
@@ -112,6 +116,10 @@ Commit messages follow a loose Conventional Commits style: `feature:`, `fix:`, `
 DE-local versus inherited from `core` via merge. Commits on `core` stay unscoped. Merge commits
 keep git's default message (e.g. `Merge branch 'core' into sway`), no prefix needed.
 
+Git tags follow `<branch>/<fedora-major>.<core-version>[.<branch-version>]` (no `<branch-version>`
+on `core`, since it never ships an image on its own) — see "Image tagging scheme" below. Create
+one with `just git-tag-release` (add `push` to also push it: `just git-tag-release push`).
+
 ## Pinning the kernel version
 
 The `Containerfile` uses the floating `ogc-45` tag from `ghcr.io/ublue-os/akmods`, so every
@@ -145,8 +153,7 @@ just push rupes latest
 sudo just sign rupes latest
 
 # Or do all of the above in one go -- builds "latest", rechunks it, and
-# pushes/signs it under the full rupes:<fedora-major>.x.y tagging scheme
-# (see below)
+# pushes/signs it under the full tagging scheme (see below)
 just release rupes
 ```
 
@@ -154,17 +161,26 @@ just release rupes
 
 Each `just release` pushes the same build under three tags:
 
-- `rupes:<fedora-major>.<minor>.<date>` — exact, immutable build (e.g. `45.0.20261104`).
-  `<minor>` comes from `VERSION_MINOR` in `image-template.env`; bump it by hand for a
-  substantial change, reset it to `0` on a Fedora major bump. `<date>` is just the build date,
-  so it never needs tracking.
-- `rupes:<fedora-major>-latest` — floating; always the newest build for that Fedora major.
+- `<image-name>:<fedora-major>.<core-version>.<branch-version>.<date>` — exact, immutable build
+  (e.g. `45.1.0.20261104`). `<core-version>` comes from `CORE_VERSION` in
+  `env/core-image-template.env` (bumped on a substantial change made on `core`, inherited by
+  every flavor via `git merge core`); `<branch-version>` comes from `BRANCH_VERSION` in
+  `env/branch-image-template.env` (bumped on a substantial change made directly on that flavor
+  branch). Both reset to `0` on a Fedora major bump. `<date>` is just the build date, so it never
+  needs tracking.
+- `<image-name>:<fedora-major>-latest` — floating; always the newest build for that Fedora major.
   Use this to track updates without ever crossing a major Fedora version
   (`bootc switch ghcr.io/corruptedbit/rupes:45-latest`).
-- `rupes:latest` — floating; always the newest build overall, including major bumps.
+- `<image-name>:latest` — floating; always the newest build overall, including major bumps.
+
+`<image-name>` is `IMAGE_NAME` in `env/branch-image-template.env` — each DE flavor publishes to
+its own GHCR package (`rupes` for sway, `rupes-gnome` for gnome, ...) so they never collide.
 
 All three point at the same image digest, so only one needs to be cosign-signed; verification
 against any of the three tags works.
+
+The matching git tag for a given build is `<branch>/<fedora-major>.<core-version>.<branch-version>`
+(see "Branches and commit conventions" above) — created with `just git-tag-release`.
 
 ### Building a VM image or ISO
 
