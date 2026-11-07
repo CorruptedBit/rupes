@@ -86,6 +86,32 @@ Reboot to apply.
     `bootc-image-builder`'s `anaconda-iso` type **always partitions automatically**, it is not a
     fully interactive installer like the official Fedora/Bazzite media.
 
+## Branches and commit conventions
+
+The repo is split across three branches:
+
+- **`core`** — the DE-agnostic baseline (kernel swap, dev tooling, fonts, Homebrew, Justfile,
+  cosign, ...). No base image `FROM` line in the `Containerfile`, so it's not meant to be built
+  directly (`just build` refuses to run on it).
+- **`sway`**, **`gnome`** — one per desktop flavor. Each adds its own base image `FROM` line plus
+  DE-specific `system_files/`/`build_files/build.sh` entries on top of `core`.
+
+A change that applies to every flavor is committed on `core`, then merged forward:
+
+```bash
+git checkout sway && git merge core
+git checkout gnome && git merge core
+```
+
+A change specific to one DE (e.g. a Sway keybinding) is committed directly on that flavor branch
+and never merged into the others.
+
+Commit messages follow a loose Conventional Commits style: `feature:`, `fix:`, `chore:`,
+`refactor:`, `bump:`, `doc:`. Commits made directly on a flavor branch add that branch as a scope
+— `feature(sway): ...`, `fix(gnome): ...` — so the log makes it obvious which commits are
+DE-local versus inherited from `core` via merge. Commits on `core` stay unscoped. Merge commits
+keep git's default message (e.g. `Merge branch 'core' into sway`), no prefix needed.
+
 ## Pinning the kernel version
 
 The `Containerfile` uses the floating `ogc-45` tag from `ghcr.io/ublue-os/akmods`, so every
