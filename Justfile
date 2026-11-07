@@ -99,6 +99,12 @@ build $target_image=image_name $tag=default_tag:
 
     set -euox pipefail
 
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "${BRANCH}" == "core" ]]; then
+        echo "error: 'core' has no DE base image -- checkout a flavor branch (sway, gnome, ...) to build" >&2
+        exit 1
+    fi
+
     BUILD_ARGS=()
     LABELS=()
     if [[ -z "$(git status -s)" ]]; then

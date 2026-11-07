@@ -21,11 +21,10 @@ FROM ghcr.io/ublue-os/akmods:${KERNEL_TAG} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_TAG} AS akmods-extra
 
 # Base Image
-FROM quay.io/fedora-ostree-desktops/sway-atomic:${FEDORA_VERSION}
-## Other possible base images include:
-# FROM quay.io/fedora-ostree-desktops/kinoite:45
-# FROM quay.io/fedora-ostree-desktops/silverblue:45
-# FROM quay.io/fedora/fedora-bootc:45
+## core branch: intentionally no FROM here. The DE flavor branches (sway,
+## gnome, ...) each add their own, e.g.:
+#   FROM quay.io/fedora-ostree-desktops/sway-atomic:${FEDORA_VERSION}
+#   FROM quay.io/fedora-ostree-desktops/silverblue:${FEDORA_VERSION}
 #
 # Fedora Atomic Desktops: quay.io/fedora-ostree-desktops/<variant>-atomic
 

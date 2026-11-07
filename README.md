@@ -7,8 +7,9 @@ Published at: `ghcr.io/corruptedbit/rupes`
 
 ## What's in the image
 
-- **Base**: [Fedora Sway Atomic](https://quay.io/repository/fedora-ostree-desktops/sway-atomic) —
-  a complete, minimal Wayland setup (Sway compositor, waybar, launcher, terminal, ...)
+- **Base**: a [Fedora Atomic Desktop](https://fedoraproject.org/atomic-desktops/) variant —
+  see the DE-specific flavor branch (`sway`, `gnome`, ...) for which one and its desktop-specific
+  configuration.
 - **OGC kernel swap**: Fedora's stock kernel is removed and replaced with the
   [OGC kernel](https://github.com/OpenGamingCollective/linux) (BORE/LAVD schedulers,
   SteamOS-derived tuning), pulled prebuilt from the `ghcr.io/ublue-os/akmods` images — see
@@ -60,8 +61,9 @@ Reboot to apply.
 
 - **`Containerfile`** — entrypoint for the image build. Pulls in `build_files/` and
   `system_files/` via a `FROM scratch` context stage (`ctx`), swaps in the OGC kernel from the
-  `ghcr.io/ublue-os/akmods{,-extra}:ogc-45` images, then runs `build.sh` against the
-  `quay.io/fedora-ostree-desktops/sway-atomic:45` base image.
+  `ghcr.io/ublue-os/akmods{,-extra}:ogc-45` images, then runs `build.sh` against the DE-specific
+  base image declared in the flavor branch (`sway`, `gnome`, ...) — this `core` branch has no
+  base image `FROM` line and is not meant to be built directly.
 - **`build_files/install-kernel-akmods`** — removes Fedora's stock kernel, installs the prebuilt
   OGC kernel RPMs, versionlocks them so `dnf` never reinstalls the stock kernel, and installs a
   small set of prebuilt kmods (only `xone` by default).
@@ -174,6 +176,3 @@ kernel-swap approach (`build_files/install-kernel-akmods`, `install-kmods`, `cle
 directly from its `Containerfile`, and `hjust` (a plain `just` alias, see
 [`system_files/usr/bin/hjust`](./system_files/usr/bin/hjust)) takes its shape from Bazzite's own
 `ujust` wrapper.
-
-The Sway/Waybar/fuzzel theming took visual inspiration from
-[Coutons/sway-ricing](https://github.com/Coutons/sway-ricing); no files were copied from it.
