@@ -1,5 +1,4 @@
-set dotenv-filename := "image-template.env"
-set dotenv-load
+set dotenv-command := "cat env/core-image-template.env env/branch-image-template.env"
 
 export image_name := env("IMAGE_NAME")
 export repo_organization := env("REPO_ORGANIZATION")
@@ -8,7 +7,8 @@ export image_keywords := env("IMAGE_KEYWORDS")
 export image_logo_url := env("IMAGE_LOGO_URL")
 export default_tag := env("DEFAULT_TAG")
 export bib_image := env("BIB_IMAGE")
-export version_minor := env("VERSION_MINOR")
+export core_version := env("CORE_VERSION")
+export branch_version := env("BRANCH_VERSION")
 
 alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
@@ -489,21 +489,22 @@ sign $target_image=image_name $tag=default_tag:
     # Cleanup
     password=""
 
-# Build, rechunk, push, and sign image under the rupes:<fedora-major>.x.y
-# tagging scheme (full release workflow). Rechunking re-derives the OCI
-# layers from the final ostree-committed filesystem, dropping dead weight
-# left behind by in-image deletions (e.g. the stock kernel removed during
-# the OGC kernel swap) that plain `podman build` layers would otherwise
-# still ship. Tags pushed:
-#   <fedora-major>.<version_minor>.<date>  -- exact, immutable build
-#   <fedora-major>-latest                  -- floating, tracks this major only
-#   latest                                 -- floating, newest build overall
+# Build, rechunk, push, and sign image under the
+# <fedora-major>.<core-version>.<branch-version>.<date> tagging scheme
+# (full release workflow). Rechunking re-derives the OCI layers from the
+# final ostree-committed filesystem, dropping dead weight left behind by
+# in-image deletions (e.g. the stock kernel removed during the OGC kernel
+# swap) that plain `podman build` layers would otherwise still ship.
+# Tags pushed:
+#   <fedora-major>.<core-version>.<branch-version>.<date>  -- exact, immutable build
+#   <fedora-major>-latest                                  -- floating, tracks this major only
+#   latest                                                 -- floating, newest build overall
 # All three point at the same digest, so cosign only needs to sign one of them.
 release $target_image=image_name:
     #!/usr/bin/env bash
     set -euo pipefail
     fedora_version=$(grep -oP '(?<=ARG FEDORA_VERSION=")[^"]+' Containerfile)
-    version_tag="${fedora_version}.${version_minor}.$(date +%Y%m%d)"
+    version_tag="${fedora_version}.${core_version}.${branch_version}.$(date +%Y%m%d)"
     major_tag="${fedora_version}-latest"
 
     sudo just build {{ target_image }} latest
@@ -518,3 +519,31 @@ release $target_image=image_name:
 
     just sign {{ target_image }} "${version_tag}"
     echo "✓ Image {{ target_image }} built, pushed as ${version_tag}, ${major_tag}, latest, and signed"
+
+# Create (and optionally push) the git tag matching the current branch's
+# CORE_VERSION/BRANCH_VERSION, mirroring the OCI image tag `release` pushes.
+# On `core` the tag has no branch-version component (core never ships an
+# image on its own). See README.md's "Image tagging scheme".
+#
+# Example usage:
+#   just git-tag-release        # tags HEAD, doesn't push
+#   just git-tag-release push   # tags HEAD and pushes the tag to origin
+[group('Utility')]
+git-tag-release push="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    branch=$(git rev-parse --abbrev-ref HEAD)
+    fedora_version=$(grep -oP '(?<=ARG FEDORA_VERSION=")[^"]+' Containerfile)
+
+    if [[ "${branch}" == "core" ]]; then
+        tag="core/${fedora_version}.${core_version}"
+    else
+        tag="${branch}/${fedora_version}.${core_version}.${branch_version}"
+    fi
+
+    git tag "${tag}"
+    echo "✓ Tagged $(git rev-parse --short HEAD) as ${tag}"
+
+    if [[ "{{ push }}" == "push" ]]; then
+        git push origin "${tag}"
+    fi
