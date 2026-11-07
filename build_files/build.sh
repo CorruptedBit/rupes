@@ -29,6 +29,16 @@ dnf5 install -y libratbag-ratbagd
 ## Requires the Steam flatpak to have /run/udev mounted read-only to see them.
 dnf5 install -y steam-devices
 
+## Terminal ($term = foot in Fedora's default sway config) and our launcher
+## (fuzzel, bound on $mod+d in 30-keybindings.conf).
+dnf5 install -y foot fuzzel
+
+## python3-i3ipc: autotiling's only runtime dependency. Not packaged itself
+## on Fedora (no autotiling/autotiling-rs RPM), so the script is shipped
+## directly in system_files/usr/bin/autotiling -- see 10-rupes.conf for the
+## `exec autotiling` that starts it.
+dnf5 install -y python3-i3ipc
+
 ## adw-gtk3-theme: plain GTK3 apps (Thunar, Blueman, ...) don't follow
 ## org.gnome.desktop.interface color-scheme -- that's only wired up for
 ## GTK4/libadwaita apps and the portal (Flatpak).
