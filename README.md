@@ -139,22 +139,17 @@ involved for now.
 Requires [`just`](https://just.systems/) and `podman`.
 
 ```bash
-# Build the image
-just build rupes latest
+# Everything in one go -- no arguments needed: builds, rechunks, tags,
+# pushes and signs under the full tagging scheme (see below). The version
+# tag is computed once at the start, so all steps share the same date.
+just release
 
-# Rechunk for smaller incremental updates (drops dead weight left behind
-# by in-image deletions, e.g. the stock kernel removed during the OGC swap)
-sudo just ostree-rechunk rupes latest
-
-# Push to GHCR
-just push rupes latest
-
-# Sign the image (requires cosign.key locally)
-sudo just sign rupes latest
-
-# Or do all of the above in one go -- builds "latest", rechunks it, and
-# pushes/signs it under the full tagging scheme (see below)
-just release rupes
+# Or step by step. `push` and `sign` have no default arguments on purpose:
+# pass the image name and the exact tag (see `sudo podman images`).
+just build <image-name> <tag>
+sudo just ostree-rechunk <image-name> <tag>
+just push <image-name> <tag>
+sudo just sign <image-name> <tag>
 ```
 
 ### Image tagging scheme
@@ -174,7 +169,10 @@ Each `just release` pushes the same build under three tags:
 - `<image-name>:latest` — floating; always the newest build overall, including major bumps.
 
 `<image-name>` is `IMAGE_NAME` in `env/branch-image-template.env` — each DE flavor publishes to
-its own GHCR package (`rupes` for sway, `rupes-gnome` for gnome, ...) so they never collide.
+its own GHCR package (`rupes-sway` for sway, `rupes-gnome` for gnome, ...) so they never collide.
+The same version string, followed by the git short SHA (e.g. `45.1.0.20261107-b6aa44d`), is
+stored in the image's `org.opencontainers.image.version` label, which is what
+`rpm-ostree status` / `bootc status` show as the image version.
 
 All three point at the same image digest, so only one needs to be cosign-signed; verification
 against any of the three tags works.
