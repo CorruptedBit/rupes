@@ -113,7 +113,7 @@ build $target_image=image_name $tag=default_tag:
         LABELS+=("--label" "org.opencontainers.image.documentation=https://raw.githubusercontent.com/{{ repo_organization }}/{{ image_name }}/${GIT_SHA}/README.md")
         LABELS+=("--label" "org.opencontainers.image.source=https://github.com/{{ repo_organization }}/{{ image_name }}/blob/${GIT_SHA}/Containerfile")
         LABELS+=("--label" "org.opencontainers.image.url=https://github.com/{{ repo_organization }}/{{ image_name }}/tree/${GIT_SHA}")
-        LABELS+=("--label" "org.opencontainers.image.version={{ default_tag }}.$(date +%Y%m%d)-${GIT_SHA}")
+        LABELS+=("--label" "org.opencontainers.image.version={{ tag }}-${GIT_SHA}")
     fi
 
     # Image metadata for https://artifacthub.io/ - This is optional but is highly recommended so we all can get a index of all the custom images
@@ -455,15 +455,20 @@ format:
     # Run shfmt on all Bash scripts
     /usr/bin/find . -iname "*.sh" -type f -exec shfmt --write "{}" ';'
 
+# Both arguments are required on purpose (no defaults), so a bare `just push`
+# can't publish just `latest` by accident; `release` passes them explicitly.
+
 # Push image to GHCR
-push $target_image=image_name $tag=default_tag:
+push $target_image $tag:
     #!/usr/bin/env bash
     set -euo pipefail
     sudo podman login ghcr.io -u {{ repo_organization }}
     sudo podman push localhost/{{ target_image }}:{{ tag }} ghcr.io/{{ repo_organization }}/{{ target_image }}:{{ tag }}
 
+# Both arguments are required, same as `push`.
+
 # Sign image with cosign (requires cosign.key)
-sign $target_image=image_name $tag=default_tag:
+sign $target_image $tag:
     #!/usr/bin/env bash
     set -euo pipefail
     if [[ ! -f "cosign.key" ]]; then
@@ -489,6 +494,14 @@ sign $target_image=image_name $tag=default_tag:
     # Cleanup
     password=""
 
+# Print the exact-build image tag:
+# <fedora-major>.<core-version>.<branch-version>.<date>
+_image-tag-builder:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    fedora_version=$(grep -oP '(?<=ARG FEDORA_VERSION=")[^"]+' Containerfile)
+    echo "${fedora_version}.${core_version}.${branch_version}.$(date +%Y%m%d)"
+
 # Build, rechunk, push, and sign image under the
 # <fedora-major>.<core-version>.<branch-version>.<date> tagging scheme
 # (full release workflow). Rechunking re-derives the OCI layers from the
@@ -499,19 +512,21 @@ sign $target_image=image_name $tag=default_tag:
 #   <fedora-major>.<core-version>.<branch-version>.<date>  -- exact, immutable build
 #   <fedora-major>-latest                                  -- floating, tracks this major only
 #   latest                                                 -- floating, newest build overall
+# The version tag (and its date) is computed once here and passed to every
+# step, so a release that runs across midnight still uses a single tag.
 # All three point at the same digest, so cosign only needs to sign one of them.
 release $target_image=image_name:
     #!/usr/bin/env bash
     set -euo pipefail
     fedora_version=$(grep -oP '(?<=ARG FEDORA_VERSION=")[^"]+' Containerfile)
-    version_tag="${fedora_version}.${core_version}.${branch_version}.$(date +%Y%m%d)"
+    version_tag=$(just _image-tag-builder)
     major_tag="${fedora_version}-latest"
 
-    sudo just build {{ target_image }} latest
-    sudo -E just ostree-rechunk {{ target_image }} latest
+    sudo just build {{ target_image }} "${version_tag}"
+    sudo -E just ostree-rechunk {{ target_image }} "${version_tag}"
 
-    sudo podman tag "localhost/{{ target_image }}:latest" "localhost/{{ target_image }}:${version_tag}"
-    sudo podman tag "localhost/{{ target_image }}:latest" "localhost/{{ target_image }}:${major_tag}"
+    sudo podman tag "localhost/{{ target_image }}:${version_tag}" "localhost/{{ target_image }}:${major_tag}"
+    sudo podman tag "localhost/{{ target_image }}:${version_tag}" "localhost/{{ target_image }}:latest"
 
     just push {{ target_image }} "${version_tag}"
     just push {{ target_image }} "${major_tag}"
