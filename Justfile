@@ -22,28 +22,37 @@ default:
 [group('Just')]
 check:
     #!/usr/bin/bash
+    set -e
+    echo
+    echo "[check]"
     find . -type f -name "*.just" | while read -r file; do
-    	echo "Checking syntax: $file"
+    	echo "[check] syntax: $file"
     	just --unstable --fmt --check -f $file
     done
-    echo "Checking syntax: Justfile"
+    echo "[check] syntax: Justfile"
     just --unstable --fmt --check -f Justfile
+    echo "[✓ check]"
 
 # Fix Just Syntax
 [group('Just')]
 fix:
     #!/usr/bin/bash
+    echo
+    echo "[fix]"
     find . -type f -name "*.just" | while read -r file; do
-    	echo "Checking syntax: $file"
+    	echo "[fix] syntax: $file"
     	just --unstable --fmt -f $file
     done
-    echo "Checking syntax: Justfile"
+    echo "[fix] syntax: Justfile"
     just --unstable --fmt -f Justfile || { exit 1; }
+    echo "[✓ fix]"
 
 # Clean Repo
 [group('Utility')]
 clean:
     #!/usr/bin/bash
+    echo
+    echo "[clean]"
     set -eoux pipefail
     touch _build
     find *_build* -exec rm -rf {} \;
@@ -51,6 +60,8 @@ clean:
     rm -f changelog.md
     rm -f output.env
     rm -rf output/
+    set +x
+    echo "[✓ clean]"
 
 # Sudo Clean Repo
 [group('Utility')]
@@ -97,6 +108,9 @@ sudoif command *args:
 build $target_image=image_name $tag=default_tag:
     #!/usr/bin/env bash
 
+    echo
+    echo "[build] target_image=${target_image} tag=${tag}"
+
     set -euox pipefail
 
     BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -133,9 +147,15 @@ build $target_image=image_name $tag=default_tag:
 
     podman build "${PODMAN_BUILD_ARGS[@]}" .
 
+    set +x
+    echo "[✓ build]"
+
 # Split the image for smaller updates (New)!
 rechunk $target_image=image_name $tag=default_tag:
     #!/usr/bin/env bash
+
+    echo
+    echo "[rechunk] target_image=${target_image} tag=${tag}"
 
     set -xeuo pipefail
 
@@ -153,9 +173,15 @@ rechunk $target_image=image_name $tag=default_tag:
     --label ostree.commit- --label ostree.final-diffid- \
     --tag "${target_image}:${tag}" | podman load
 
+    set +x
+    echo "[✓ rechunk]"
+
 # Split the image for smaller updates (Classical)!
 ostree-rechunk $target_image=image_name $tag=default_tag:
     #!/usr/bin/env bash
+
+    echo
+    echo "[ostree-rechunk] target_image=${target_image} tag=${tag}"
 
     set -xeuo pipefail
 
@@ -181,6 +207,9 @@ ostree-rechunk $target_image=image_name $tag=default_tag:
       --bootc \
       --from "localhost/${target_image}:${tag}" \
       --output containers-storage:"localhost/${target_image}:${tag}"
+
+    set +x
+    echo "[✓ ostree-rechunk]"
 
 # Generate Default Tag
 [group('Utility')]
@@ -215,6 +244,8 @@ generate-build-tags $target_image=image_name $tag=default_tag:
 [group('Utility')]
 tag-images $target_image=image_name $tag=default_tag tags="":
     #!/usr/bin/env bash
+    echo
+    echo "[tag-images] target_image=${target_image} tag=${tag} tags={{ tags }}"
     set -eoux pipefail
 
     # Get Image, and untag
@@ -228,6 +259,9 @@ tag-images $target_image=image_name $tag=default_tag tags="":
 
     # Show Images
     podman images
+
+    set +x
+    echo "[✓ tag-images]"
 
 # Image Name
 [group('Utility')]
@@ -257,11 +291,15 @@ image_name $target_image=image_name:
 
 _rootful_load_image $target_image=image_name $tag=default_tag:
     #!/usr/bin/bash
+    echo
+    echo "[_rootful_load_image] target_image=${target_image} tag=${tag}"
     set -eoux pipefail
 
     # Check if already running as root or under sudo
     if [[ -n "${SUDO_USER:-}" || "${UID}" -eq "0" ]]; then
-        echo "Already root or running under sudo, no need to load image from user podman."
+        echo "[_rootful_load_image] already root or running under sudo, no need to load image from user podman"
+        set +x
+        echo "[✓ _rootful_load_image]"
         exit 0
     fi
 
@@ -287,6 +325,9 @@ _rootful_load_image $target_image=image_name $tag=default_tag:
         just sudoif podman pull "${target_image}:${tag}"
     fi
 
+    set +x
+    echo "[✓ _rootful_load_image]"
+
 # Build a bootc bootable image using Bootc Image Builder (BIB)
 # Converts a container image to a bootable image
 # Parameters:
@@ -299,6 +340,9 @@ _rootful_load_image $target_image=image_name $tag=default_tag:
 _build-bib $target_image $tag $type $config: (_rootful_load_image target_image tag)
     #!/usr/bin/env bash
     set -euo pipefail
+
+    echo
+    echo "[_build-bib] target_image=${target_image} tag=${tag} type=${type} config=${config}"
 
     args="--type ${type} "
     args+="--use-librepo=True "
@@ -324,6 +368,8 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
     sudo mv -f $BUILDTMP/* output/
     sudo rmdir $BUILDTMP
     sudo chown -R $USER:$USER output/
+
+    echo "[✓ _build-bib]"
 
 # Podman builds the image from the Containerfile and creates a bootable image
 # Parameters:
@@ -362,6 +408,8 @@ rebuild-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_reb
 # Run a virtual machine with the specified image type and configuration
 _run-vm $target_image $tag $type $config:
     #!/usr/bin/bash
+    echo
+    echo "[_run-vm] target_image=${target_image} tag=${tag} type=${type} config=${config}"
     set -eoux pipefail
 
     # Determine the image file based on the type
@@ -401,6 +449,9 @@ _run-vm $target_image $tag $type $config:
     (sleep 30 && xdg-open http://localhost:"$port") &
     podman run "${run_args[@]}"
 
+    set +x
+    echo "[✓ _run-vm]"
+
 # Run a virtual machine from a QCOW2 image
 [group('Run Virtal Machine')]
 run-vm-qcow2 $target_image=("localhost/" + image_name) $tag=default_tag: && (_run-vm target_image tag "qcow2" "disk_config/disk.toml")
@@ -420,6 +471,9 @@ spawn-vm rebuild="0" type="qcow2" ram="6G":
 
     set -euo pipefail
 
+    echo
+    echo "[spawn-vm] rebuild={{ rebuild }} type={{ type }} ram={{ ram }}"
+
     [ "{{ rebuild }}" -eq 1 ] && echo "Rebuilding the ISO" && just build-vm {{ rebuild }} {{ type }}
 
     systemd-vmspawn \
@@ -431,9 +485,13 @@ spawn-vm rebuild="0" type="qcow2" ram="6G":
       --vsock=false --pass-ssh-key=false \
       -i ./output/**/*.{{ type }}
 
+    echo "[✓ spawn-vm]"
+
 # Runs shell check on all Bash scripts
 lint:
     #!/usr/bin/env bash
+    echo
+    echo "[lint]"
     set -eoux pipefail
     # Check if shellcheck is installed
     if ! command -v shellcheck &> /dev/null; then
@@ -443,9 +501,14 @@ lint:
     # Run shellcheck on all Bash scripts
     /usr/bin/find . -iname "*.sh" -type f -exec shellcheck "{}" ';'
 
+    set +x
+    echo "[✓ lint]"
+
 # Runs shfmt on all Bash scripts
 format:
     #!/usr/bin/env bash
+    echo
+    echo "[format]"
     set -eoux pipefail
     # Check if shfmt is installed
     if ! command -v shfmt &> /dev/null; then
@@ -455,6 +518,9 @@ format:
     # Run shfmt on all Bash scripts
     /usr/bin/find . -iname "*.sh" -type f -exec shfmt --write "{}" ';'
 
+    set +x
+    echo "[✓ format]"
+
 # Both arguments are required on purpose (no defaults), so a bare `just push`
 # can't publish just `latest` by accident; `release` passes them explicitly.
 
@@ -462,8 +528,14 @@ format:
 push $target_image $tag:
     #!/usr/bin/env bash
     set -euo pipefail
+
+    echo
+    echo "[push] target_image=${target_image} tag=${tag}"
+
     sudo podman login ghcr.io -u {{ repo_organization }}
     sudo podman push localhost/{{ target_image }}:{{ tag }} ghcr.io/{{ repo_organization }}/{{ target_image }}:{{ tag }}
+
+    echo "[✓ push]"
 
 # Both arguments are required, same as `push`.
 
@@ -471,6 +543,10 @@ push $target_image $tag:
 sign $target_image $tag:
     #!/usr/bin/env bash
     set -euo pipefail
+
+    echo
+    echo "[sign] target_image=${target_image} tag=${tag}"
+
     if [[ ! -f "cosign.key" ]]; then
         echo "Error: cosign.key not found in repo root"
         exit 1
@@ -493,6 +569,8 @@ sign $target_image $tag:
 
     # Cleanup
     password=""
+
+    echo "[✓ sign]"
 
 # Print the exact-build image tag:
 # <fedora-major>.<core-version>.<branch-version>.<date>
@@ -522,6 +600,9 @@ release $target_image=image_name:
     version_tag=$(just _image-tag-builder)
     major_tag="${fedora_version}-latest"
 
+    echo
+    echo "[release] target_image={{ target_image }} version_tag=${version_tag} major_tag=${major_tag}"
+
     sudo just build {{ target_image }} "${version_tag}"
     sudo -E just ostree-rechunk {{ target_image }} "${version_tag}"
 
@@ -533,7 +614,8 @@ release $target_image=image_name:
     just push {{ target_image }} latest
 
     just sign {{ target_image }} "${version_tag}"
-    echo "✓ Image {{ target_image }} built, pushed as ${version_tag}, ${major_tag}, latest, and signed"
+    echo
+    echo "[✓ release]"
 
 # Create (and optionally push) the git tag matching the current branch's
 # CORE_VERSION/BRANCH_VERSION, mirroring the OCI image tag `release` pushes.
@@ -547,6 +629,7 @@ release $target_image=image_name:
 git-tag-release push="":
     #!/usr/bin/env bash
     set -euo pipefail
+    echo
     branch=$(git rev-parse --abbrev-ref HEAD)
     fedora_version=$(grep -oP '(?<=ARG FEDORA_VERSION=")[^"]+' Containerfile)
 
@@ -556,9 +639,12 @@ git-tag-release push="":
         tag="${branch}/${fedora_version}.${core_version}.${branch_version}"
     fi
 
+    echo "[git-tag-release] tag=${tag} commit=$(git rev-parse --short HEAD) push={{ push }}"
+
     git tag "${tag}"
-    echo "✓ Tagged $(git rev-parse --short HEAD) as ${tag}"
 
     if [[ "{{ push }}" == "push" ]]; then
         git push origin "${tag}"
     fi
+
+    echo "[✓ git-tag-release]"
