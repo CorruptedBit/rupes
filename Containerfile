@@ -24,6 +24,7 @@ FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_TAG} AS akmods-extra
 ## core branch: intentionally no FROM here. The DE flavor branches (sway,
 ## gnome, ...) each add their own, e.g.:
 #   FROM quay.io/fedora-ostree-desktops/sway-atomic:${FEDORA_VERSION}
+FROM quay.io/fedora-ostree-desktops/sway-atomic:${FEDORA_VERSION}
 #   FROM quay.io/fedora-ostree-desktops/silverblue:${FEDORA_VERSION}
 #
 # Fedora Atomic Desktops: quay.io/fedora-ostree-desktops/<variant>-atomic
