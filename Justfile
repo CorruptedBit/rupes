@@ -601,20 +601,38 @@ release $target_image=image_name:
     major_tag="${fedora_version}-latest"
 
     echo
-    echo "[release] target_image={{ target_image }} version_tag=${version_tag} major_tag=${major_tag}"
+    echo "[just release] target_image={{ target_image }} version_tag=${version_tag} major_tag=${major_tag}"
 
+    echo
+
+    echo "[just build] Building -> target_image={{ target_image }} version_tag=${version_tag} major_tag=${major_tag}"
     sudo just build {{ target_image }} "${version_tag}"
+    echo
+
+    echo "[just ostree-rechunk] Rechunking -> target_image={{ target_image }} version_tag=${version_tag}"
     sudo -E just ostree-rechunk {{ target_image }} "${version_tag}"
+    echo
 
+    echo "[podman tag] Tagging local image -> [localhost/{{ target_image }}:${version_tag}] -> [localhost/{{ target_image }}:${major_tag}]"
     sudo podman tag "localhost/{{ target_image }}:${version_tag}" "localhost/{{ target_image }}:${major_tag}"
+    echo
+
+    echo "[podman tag] Tagging local image -> [localhost/{{ target_image }}:${version_tag}] -> [localhost/{{ target_image }}:latest]"
     sudo podman tag "localhost/{{ target_image }}:${version_tag}" "localhost/{{ target_image }}:latest"
+    echo
 
+    echo "[just push] Pushing -> target_image={{ target_image }} tag=${version_tag}"
     just push {{ target_image }} "${version_tag}"
+    echo "[just push] Pushing -> target_image={{ target_image }} tag=${major_tag}"
     just push {{ target_image }} "${major_tag}"
+    echo "[just push] Pushing -> target_image={{ target_image }} tag=latest"
     just push {{ target_image }} latest
+    echo
 
+    echo "[just sign] Signing -> target_image={{ target_image }} tag=${version_tag}"
     just sign {{ target_image }} "${version_tag}"
     echo
+
     echo "[✓ release]"
 
 # Create (and optionally push) the git tag matching the current branch's
