@@ -48,6 +48,11 @@ dnf5 install -y adw-gtk3-theme
 ## the default PATH and the setuid fusermount3 helper works for normal users.
 dnf5 install -y fuse-sshfs
 
+## xdg-terminal-exec: spec-compliant launcher for "the default terminal".
+## Apps that call xdg-terminal-exec instead of hardcoding a terminal run the one
+## listed first in ~/.config/xdg-terminals.list. Works on any desktop.
+dnf5 install -y xdg-terminal-exec
+
 ## Terra Software (Zed editor)
 ## Plain fedora-bootc doesn't ship the Terra repo files like ublue-os images
 ## do, so bootstrap it ourselves (see https://docs.terrapkg.com/usage/installing/).
